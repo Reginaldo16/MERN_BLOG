@@ -1,3 +1,5 @@
+import userService from "../services/user.service.js";
+
 const getAllUsers = (req, res) => {
     res.status(200).json({ message: 'users' });
 };
@@ -12,26 +14,36 @@ const findById = (req, res) => {
     res.status(200).json({ message: `Usuario com id  ${id}` });
 };
 
-const createuser = (req, res) => {
+const createuser = async (req, res) => {
     const { name, username, email, password, avatar, background } = req.body;
 
-    if (!name || !username || !email || !password || !avatar) {
-        return res.status(400).send({ message: "Preencha todos campos" })
+    if (!name || !username || !email || !password) {
+        return res.status(400).send({ message: "Preencha todos os campos obrigatórios" });
     }
 
+    try {
+        const user = await userService.create(req.body);
 
-    return res.status(201).json({
-        message: "Usuario criado com sucesso!",
-        user: {
-            name,
-            username,
-            email,
-            avatar,
-            background
+        if (!user) {
+            return res.status(400).send({ message: "Erro ao cadastrar usuário" });
         }
-    })
 
-}
+        return res.status(201).json({
+            message: "Usuário criado com sucesso!",
+            user: {
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                background: user.background
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).send({ message: "Erro interno no servidor" });
+    }
+};
+
 
 export default {
     getAllUsers,
