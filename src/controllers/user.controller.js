@@ -60,9 +60,30 @@ const createuser = async (req, res) => {
     }
 };
 
+const update = async (req, res) => {
+    const id = req.params.id
+
+    const user = await userService.findById(id)
+    if (!user) {
+        return res.status(400).send({ message: 'Usuario nao existe' })
+    }
+    const { name, email, username, avatar, background } = req.body
+
+    if (!name && !email && !username && !avatar && !background) {
+        return res.status(400).send({ message: 'Preencha um campo' })
+    }
+
+    const updatedUser = await userService.update(
+        id, name, username, email, avatar, background
+    )
+
+    res.status(201).send({ message: "Sucesso", updatedUser })
+}
+
 
 export default {
     getAllUsers,
     findById,
-    createuser
+    createuser,
+    update
 };
