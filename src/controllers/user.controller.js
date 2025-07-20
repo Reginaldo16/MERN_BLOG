@@ -12,7 +12,29 @@ const findById = (req, res) => {
     res.status(200).json({ message: `Usuario com id  ${id}` });
 };
 
+const createuser = (req, res) => {
+    const { name, username, email, password, avatar, background } = req.body;
+
+    if (!name || !username || !email || !password || !avatar) {
+        return res.status(400).send({ message: "Preencha todos campos" })
+    }
+
+
+    return res.status(201).json({
+        message: "Usuario criado com sucesso!",
+        user: {
+            name,
+            username,
+            email,
+            avatar,
+            background
+        }
+    })
+
+}
+
 export default {
     getAllUsers,
-    findById
+    findById,
+    createuser
 };
