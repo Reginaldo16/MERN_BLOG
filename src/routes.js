@@ -1,10 +1,7 @@
 import { Router } from "express";
+import route from "./routes/users.routes.js";
 
 const mainRoutes = Router();
-
-
-mainRoutes.get('/', (req, res) => {
-    res.status(200).json({ message: true })
-})
+mainRoutes.use('/users', route)
 
 export default mainRoutes
