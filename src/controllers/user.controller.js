@@ -1,17 +1,22 @@
 import userService from "../services/user.service.js";
+import { hashpassword } from "../utils/hashpassword.js";
 
-const getAllUsers = (req, res) => {
-    res.status(200).json({ message: 'users' });
+const getAllUsers = async (req, res) => {
+    const users = await userService.findAllUsers()
+    if (!users) {
+        return []
+    }
+    res.status(200).json({ message: 'users', users });
 };
 
-const findById = (req, res) => {
+const findById = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
         return res.status(400).json({ error: 'ID inválido' });
     }
-
-    res.status(200).json({ message: `Usuario com id  ${id}` });
+    const user = await userService.findById(id)
+    res.status(200).json({ user });
 };
 
 const createuser = async (req, res) => {
@@ -21,8 +26,18 @@ const createuser = async (req, res) => {
         return res.status(400).send({ message: "Preencha todos os campos obrigatórios" });
     }
 
+    const hashedpassword = await hashpassword(password);
     try {
-        const user = await userService.create(req.body);
+
+        const user = await userService.create({
+            name,
+            username,
+            email,
+            password: hashedpassword,
+            avatar,
+            background
+        }
+        );
 
         if (!user) {
             return res.status(400).send({ message: "Erro ao cadastrar usuário" });
@@ -35,6 +50,7 @@ const createuser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 avatar: user.avatar,
+                password: user.password,
                 background: user.background
             }
         });
