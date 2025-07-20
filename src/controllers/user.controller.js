@@ -1,37 +1,65 @@
-const getAllUsers = (req, res) => {
-    res.status(200).json({ message: 'users' });
+import userService from "../services/user.service.js";
+import { hashpassword } from "../utils/hashpassword.js";
+
+const getAllUsers = async (req, res) => {
+    const users = await userService.findAllUsers()
+    if (!users) {
+        return []
+    }
+    res.status(200).json({ message: 'users', users });
 };
 
-const findById = (req, res) => {
+const findById = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
         return res.status(400).json({ error: 'ID inválido' });
     }
-
-    res.status(200).json({ message: `Usuario com id  ${id}` });
+    const user = await userService.findById(id)
+    res.status(200).json({ user });
 };
 
-const createuser = (req, res) => {
+const createuser = async (req, res) => {
     const { name, username, email, password, avatar, background } = req.body;
 
-    if (!name || !username || !email || !password || !avatar) {
-        return res.status(400).send({ message: "Preencha todos campos" })
+    if (!name || !username || !email || !password) {
+        return res.status(400).send({ message: "Preencha todos os campos obrigatórios" });
     }
 
+    const hashedpassword = await hashpassword(password);
+    try {
 
-    return res.status(201).json({
-        message: "Usuario criado com sucesso!",
-        user: {
+        const user = await userService.create({
             name,
             username,
             email,
+            password: hashedpassword,
             avatar,
             background
         }
-    })
+        );
 
-}
+        if (!user) {
+            return res.status(400).send({ message: "Erro ao cadastrar usuário" });
+        }
+
+        return res.status(201).json({
+            message: "Usuário criado com sucesso!",
+            user: {
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                password: user.password,
+                background: user.background
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).send({ message: "Erro interno no servidor" });
+    }
+};
+
 
 export default {
     getAllUsers,
